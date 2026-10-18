@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PN 接面互動：從能帶到 LED 與太陽能電池</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EDF1F5;--panel:#fff;--ink:#121C27;--mute:#5B6B7B;--line:#CCD6E0;--p:#D8453A;--n:#2A66D9;--sun:#E59B00;--ok:#1E8E5A;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1219;--panel:#131C26;--ink:#E6EEF6;--mute:#8DA0B3;--line:#263544;--p:#FF6B5E;--n:#5C98FF;--sun:#FFB62E;--ok:#4FD08E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0C1219;--panel:#131C26;--ink:#E6EEF6;--mute:#8DA0B3;--line:#263544;--p:#FF6B5E;--n:#5C98FF;--sun:#FFB62E;--ok:#4FD08E;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+main{max-width:860px;margin:0 auto;padding:28px 18px 80px}
+h1{font-weight:900;font-size:clamp(30px,6vw,52px);line-height:1.15;margin:8px 0 10px;letter-spacing:.01em}
+h1 span{color:var(--n)}h1 em{font-style:normal;color:var(--p)}
+.lead{color:var(--mute);max-width:36em;margin:0 0 20px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+nav a{color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:6px 14px;border-radius:20px;font-size:14px}
+nav a:hover{border-color:var(--n)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--n);outline-offset:3px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 22px}
+h2{font-size:22px;font-weight:700;margin:0 0 4px}
+.sub{color:var(--mute);font-size:14.5px;margin:0 0 14px}
+canvas{display:block;width:100%;border-radius:8px;background:var(--bg)}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin:14px 0 4px}
+.ctl label{font-size:14px;color:var(--mute)}
+.ctl output{font-weight:700;min-width:5.5em;text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--n);height:28px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px}
+.stats div{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.stats small{display:block;color:var(--mute);font-size:12.5px}
+.stats b{font-size:17px;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 4px}
+.chips button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.chips button[aria-pressed=true]{border-color:var(--n);box-shadow:inset 0 0 0 1px var(--n);font-weight:700}
+.note{font-size:14px;color:var(--mute);margin:10px 0 0}
+.spec{height:12px;border-radius:6px;margin:14px 0 6px;position:relative;border:1px solid var(--line)}
+.spec i{position:absolute;top:-6px;width:3px;height:24px;background:var(--ink);border-radius:2px;transform:translateX(-1px);transition:left .3s}
+.specl{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.q{margin:0 0 18px}.q p{margin:0 0 8px;font-weight:500}
+.q button{display:block;width:100%;text-align:left;font:inherit;font-size:14.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.q button.r{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.q button.w{border-color:var(--p);box-shadow:inset 0 0 0 1px var(--p)}
+.q .why{font-size:14px;color:var(--mute);margin-top:4px}
+#score{font-weight:700}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>一個 <span>P</span>–<em>N</em> 接面，<br>為什麼能發光，也能發電？</h1>
+<p class="lead">拖動電壓，看能帶怎麼彎；換一種材料，看 LED 的顏色怎麼變；調整日照，看太陽能電池輸出多少功率。三個現象都出自同一個接面。</p>
+<nav aria-label="章節"><a href="#pn">能帶與偏壓</a><a href="#led">LED 發光</a><a href="#solar">太陽能電池</a><a href="#quiz">小測驗</a></nav>
+
+<section id="pn">
+<h2>能帶與偏壓</h2>
+<p class="sub">左邊是 P 型（多數載子為電洞），右邊是 N 型（多數載子為電子）。順向偏壓會壓低能障，電子與電洞就能越過接面。</p>
+<canvas id="cPN" height="300" role="img" aria-label="PN 接面能帶圖，隨偏壓改變"></canvas>
+<div class="ctl"><label for="vPN">外加電壓 V</label><input id="vPN" type="range" min="-2" max="0.8" step="0.01" value="0"><output id="oPN"></output></div>
+<div class="stats">
+<div><small>能障高度 q(Vbi − V)</small><b id="sBar"></b></div>
+<div><small>空乏區寬度（相對）</small><b id="sW"></b></div>
+<div><small>電流狀態</small><b id="sI"></b></div>
+</div>
+<p class="note">以矽為例，內建電位 Vbi 取 0.7 V。順向電流依 I = Is(e<sup>V/0.0259</sup> − 1) 成長，電壓每增加約 60 mV，電流就放大 10 倍。</p>
+</section>
+
+<section id="led">
+<h2>LED：順向偏壓下，電子與電洞複合成光子</h2>
+<p class="sub">光子能量約等於能隙 Eg，所以波長 λ ≈ 1240 ÷ Eg（nm）。選一種材料，再把電壓加到超過導通電壓。</p>
+<div class="chips" id="ledChips" role="group" aria-label="LED 材料"></div>
+<canvas id="cLED" height="230" role="img" aria-label="LED 發光示意"></canvas>
+<div class="spec" id="spec"><i id="specM"></i></div>
+<div class="specl"><span>300 nm</span><span>可見光 380–780 nm</span><span>1000 nm</span></div>
+<div class="ctl"><label for="vLED">順向電壓 V</label><input id="vLED" type="range" min="0" max="4" step="0.01" value="0"><output id="oLED"></output></div>
+<div class="stats">
+<div><small>能隙 Eg</small><b id="lEg"></b></div>
+<div><small>發光波長 λ</small><b id="lWl"></b></div>
+<div><small>光色</small><b id="lCol"></b></div>
+<div><small>導通電壓（約）</small><b id="lVf"></b></div>
+</div>
+<p class="note" id="lNote"></p>
+</section>
+
+<section id="solar">
+<h2>太陽能電池：光子把電子推過接面，電池輸出電流</h2>
+<p class="sub">同樣的接面，不加電壓，改用光照射。光越強，短路電流 Isc 越大；曲線最高的那一點是最大功率點。</p>
+<div class="chips" id="solChips" role="group" aria-label="電池材料"></div>
+<canvas id="cSol" height="320" role="img" aria-label="太陽能電池 I-V 與 P-V 曲線"></canvas>
+<div class="ctl"><label for="gSol">日照強度</label><input id="gSol" type="range" min="0.1" max="1" step="0.01" value="1"><output id="oSol"></output></div>
+<div class="stats">
+<div><small>短路電流密度 Jsc</small><b id="sJsc"></b></div>
+<div><small>開路電壓 Voc</small><b id="sVoc"></b></div>
+<div><small>最大功率 Pmax</small><b id="sP"></b></div>
+<div><small>填充因子 FF</small><b id="sFF"></b></div>
+<div><small>轉換效率</small><b id="sEff"></b></div>
+</div>
+<p class="note">單二極體示意模型（理想因子 1.2），各材料的 Jsc 與 Voc 取近似值，用來看趨勢，不是實測數據。能隙越大，Voc 越高，但能吸收的光變少、Jsc 較低。</p>
+</section>
+
+<section id="quiz"><h2>小測驗</h2><p class="sub">共 5 題，答完會顯示分數。<span id="score"></span></p><div id="qs"></div></section>
+</main>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function setup(c){const d=devicePixelRatio||1,w=c.clientWidth,h=+c.getAttribute("height");c.width=Math.round(w*d);c.height=Math.round(h*d);const x=c.getContext("2d");x.setTransform(d,0,0,d,0,0);return[x,w,h]}
+function wl2rgb(l){let r=0,g=0,b=0;if(l<380||l>780)return null;
+if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else r=1;
+const f=l<420?.3+.7*(l-380)/40:l>700?.3+.7*(780-l)/80:1;return[r,g,b].map(v=>Math.round(255*Math.pow(v*f,.8)))}
+
+/* ---------- 1. PN band diagram ---------- */
+const cPN=$("#cPN"),vPN=$("#vPN");let t0=0;
+function bandY(x,xc,w,ycn,D){const a=xc-w,b=xc+w;if(x<=a)return ycn-D;if(x>=b)return ycn;const t=(x-a)/(b-a),s=t<.5?2*t*t:1-2*(1-t)*(1-t);return ycn-D+D*s}
+function drawPN(time){
+const[x,W,H]=setup(cPN),V=+vPN.value,Vbi=.7,Vb=Math.max(.04,Vbi-V),xc=W/2,w=W*.09*Math.sqrt(Vb/Vbi),D=76*Vb/Vbi,ycn=160,gap=100;
+const ink=css("--ink"),mute=css("--mute"),P=css("--p"),N=css("--n"),line=css("--line"),sun=css("--sun"),panel=css("--panel");
+x.clearRect(0,0,W,H);
+x.globalAlpha=.1;x.fillStyle=P;x.fillRect(0,0,xc-w,H);x.fillStyle=N;x.fillRect(xc+w,0,W-xc-w,H);x.globalAlpha=1;
+x.fillStyle=panel;x.globalAlpha=.7;x.fillRect(xc-w,0,2*w,H);x.globalAlpha=1;
+x.strokeStyle=line;x.setLineDash([4,4]);x.strokeRect(xc-w,.5,2*w,H-1);x.setLineDash([]);
+x.font="700 16px 'Noto Sans TC',sans-serif";x.textAlign="center";x.fillStyle=P;x.fillText("P 型",xc-w-48,24);x.fillStyle=N;x.fillText("N 型",xc+w+48,24);
+x.font="12px 'Noto Sans TC',sans-serif";x.fillStyle=mute;x.fillText("空乏區",xc,H-10);
+for(let i=0;i<4;i++){const yy=60+i*34;x.fillStyle=P;x.fillText("−",xc-w*.5,yy+4);x.fillStyle=N;x.fillText("+",xc+w*.5,yy+4)}
+const path=(off)=>{x.beginPath();for(let px=0;px<=W;px+=4){const y=bandY(px,xc,w,ycn,D)+off;px?x.lineTo(px,y):x.moveTo(px,y)}x.stroke()};
+x.lineWidth=3;x.strokeStyle=ink;path(0);path(gap);x.lineWidth=1;
+x.textAlign="left";x.fillStyle=mute;x.fillText("導帶 Ec",6,ycn-D-8);x.fillText("價帶 Ev",6,ycn-D+gap+18);
+x.setLineDash([6,5]);x.strokeStyle=sun;x.lineWidth=1.6;
+const efp=ycn-D+gap-12,efn=ycn+12;x.beginPath();x.moveTo(0,efp);x.lineTo(xc,efp);x.stroke();x.beginPath();x.moveTo(xc,efn);x.lineTo(W,efn);x.stroke();x.setLineDash([]);
+x.fillStyle=sun;x.textAlign="right";x.fillText("費米能階 EF",W-6,efn-6);
+const f=clamp((V-.3)/.4,0,1);
+const xl=(xc+w)+(W*.12-(xc+w))*f,xr=(xc-w)+(W*.88-(xc-w))*f;
+for(let i=0;i<10;i++){
+ const u=(time*(.06+.22*f)+i/10)%1;
+ const ex=W*.96-u*(W*.96-xl),ey=bandY(ex,xc,w,ycn,D);
+ x.fillStyle=N;x.beginPath();x.arc(ex,ey,5,0,7);x.fill();
+ const hx=W*.04+u*(xr-W*.04),hy=bandY(hx,xc,w,ycn,D)+gap;
+ x.strokeStyle=P;x.lineWidth=2;x.beginPath();x.arc(hx,hy,5,0,7);x.stroke();x.lineWidth=1}
+if(f>.15){x.fillStyle=sun;x.globalAlpha=.4+.6*Math.abs(Math.sin(time*6));const cy=ycn-D/2+gap/2;
+ for(let k=0;k<8;k++){const a=k*Math.PI/4;x.beginPath();x.moveTo(xc+Math.cos(a)*8,cy+Math.sin(a)*8);x.lineTo(xc+Math.cos(a)*(14+12*f),cy+Math.sin(a)*(14+12*f));x.strokeStyle=sun;x.lineWidth=2;x.stroke()}x.globalAlpha=1;x.lineWidth=1}
+$("#oPN").textContent=V.toFixed(2)+" V";
+$("#sBar").textContent=Vb.toFixed(2)+" eV";
+$("#sW").textContent=Math.round(100*Math.sqrt(Vb/Vbi))+"%";
+$("#sI").textContent=V>.5?"順向導通":V>0?"順向，電流還很小":V<-.05?"逆向，只有漏電":"平衡";
+}
+
+/* ---------- 2. LED ---------- */
+const MAT=[{n:"矽 Si",eg:1.12,d:0},{n:"GaAs",eg:1.42,d:1},{n:"GaAsP 紅",eg:1.9,d:1},{n:"GaP 綠",eg:2.26,d:1},{n:"InGaN 藍",eg:2.76,d:1},{n:"GaN 紫外",eg:3.4,d:1}];
+let led=3;
+const cLED=$("#cLED"),vLED=$("#vLED");
+function colName(l){return l<380?"紫外（看不見）":l>780?"紅外（看不見）":l<450?"紫藍":l<495?"藍":l<570?"綠":l<590?"黃":l<620?"橘":"紅"}
+function buildChips(el,list,get,set){el.innerHTML="";list.forEach((m,i)=>{const b=document.createElement("button");b.textContent=m.n;b.setAttribute("aria-pressed",get()===i);b.onclick=()=>{set(i);[...el.children].forEach((c,j)=>c.setAttribute("aria-pressed",j===i));updLED();drawSol()};el.appendChild(b)})}
+function updLED(){
+const m=MAT[led],l=1240/m.eg,rgb=wl2rgb(l);
+$("#lEg").textContent=m.eg.toFixed(2)+" eV";$("#lWl").textContent=Math.round(l)+" nm";$("#lCol").textContent=m.d?colName(l):"幾乎不發光";$("#lVf").textContent="≈ "+m.eg.toFixed(1)+" V";
+$("#specM").style.left=clamp((l-300)/700*100,0,100)+"%";
+$("#lNote").textContent=m.d?(rgb?"直接能隙材料，電子與電洞複合時直接放出光子，電壓越過導通電壓後亮度快速上升。":"光子能量落在可見光之外，電路有電流，但人眼看不到亮光。"):"矽是間接能隙，複合時多半把能量變成熱（晶格振動），所以不能拿來做一般 LED。";
+drawLED(0)}
+function drawLED(time){
+const[x,W,H]=setup(cLED),m=MAT[led],V=+vLED.value,l=1240/m.eg,rgb=wl2rgb(l)||(l>780?[120,20,20]:[110,60,200]);
+$("#oLED").textContent=V.toFixed(2)+" V";
+const b=clamp((V-m.eg+.05)/.7,0,1)*(m.d?1:.03),vis=!!wl2rgb(l);
+const cx=W/2,cy=H/2,r=58,line=css("--line"),ink=css("--ink"),mute=css("--mute");
+x.clearRect(0,0,W,H);
+if(b>0){const g=x.createRadialGradient(cx,cy,r*.3,cx,cy,r*(1.2+2.2*b));const c=`${rgb[0]},${rgb[1]},${rgb[2]}`;g.addColorStop(0,`rgba(${c},${vis?.9*b:.35*b})`);g.addColorStop(1,`rgba(${c},0)`);x.fillStyle=g;x.fillRect(0,0,W,H)}
+x.beginPath();x.arc(cx,cy,r,0,7);x.fillStyle=b>0?`rgba(${rgb.join(",")},${.25+.75*b})`:css("--panel");x.fill();
+x.lineWidth=3;x.strokeStyle=ink;x.setLineDash(vis||b===0?[]:[6,5]);x.stroke();x.setLineDash([]);x.lineWidth=1;
+x.fillStyle=mute;x.font="13px 'Noto Sans TC',sans-serif";x.textAlign="center";
+x.fillText(b>0?(vis?"發光中":"有發光，但人眼看不到"):(V<m.eg?"電壓還沒超過導通電壓":""),cx,H-14);
+x.fillStyle=ink;x.font="700 15px 'Noto Sans TC',sans-serif";x.fillText(m.n,cx,cy+5);
+x.strokeStyle=line;x.beginPath();x.moveTo(30,cy);x.lineTo(cx-r-8,cy);x.moveTo(cx+r+8,cy);x.lineTo(W-30,cy);x.stroke();
+x.fillStyle=css("--p");x.fillText("陽極 +",56,cy-10);x.fillStyle=css("--n");x.fillText("陰極 −",W-56,cy-10);
+}
+
+/* ---------- 3. Solar cell ---------- */
+const SOL=[{n:"矽 Si",eg:1.12,jsc:42,voc:.69},{n:"GaAs",eg:1.42,jsc:29,voc:1.0},{n:"CdTe",eg:1.5,jsc:27,voc:.85},{n:"鈣鈦礦",eg:1.6,jsc:25,voc:1.1}];
+let sol=0;const cSol=$("#cSol"),gSol=$("#gSol"),nVt=.031;
+function solCalc(){const m=SOL[sol],G=+gSol.value,j0=m.jsc/Math.exp(m.voc/nVt),jph=m.jsc*G,voc=nVt*Math.log(jph/j0+1);
+let pts=[],best={p:0,v:0,j:0};for(let i=0;i<=200;i++){const v=voc*1.08*i/200,j=jph-j0*(Math.exp(v/nVt)-1),p=Math.max(0,v*j);pts.push([v,Math.max(j,0),p]);if(p>best.p)best={p,v,j}}
+return{m,G,jph,voc,pts,best}}
+function drawSol(){
+const[x,W,H]=setup(cSol),S=solCalc(),pad={l:52,r:52,t:16,b:40},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+const ink=css("--ink"),mute=css("--mute"),line=css("--line"),N=css("--n"),sun=css("--sun");
+const vmax=1.25,jmax=45,pmax=30;
+const X=v=>pad.l+v/vmax*pw,Yj=j=>pad.t+ph-j/jmax*ph,Yp=p=>pad.t+ph-p/pmax*ph;
+x.clearRect(0,0,W,H);x.font="12px 'Noto Sans TC',sans-serif";x.fillStyle=mute;x.strokeStyle=line;
+for(let i=0;i<=5;i++){const j=i*9,y=Yj(j);x.beginPath();x.moveTo(pad.l,y);x.lineTo(W-pad.r,y);x.stroke();x.textAlign="right";x.fillText(j,pad.l-6,y+4);x.textAlign="left";x.fillText(i*6,W-pad.r+6,y+4)}
+for(let v=0;v<=1.2;v+=.2){x.textAlign="center";x.fillText(v.toFixed(1),X(v),H-pad.b+16)}
+x.fillText("電壓 V",pad.l+pw/2,H-6);x.textAlign="left";x.fillStyle=N;x.fillText("電流密度 mA/cm²",4,12);x.fillStyle=sun;x.textAlign="right";x.fillText("功率 mW/cm²",W-2,12);
+x.lineWidth=2.5;x.strokeStyle=N;x.beginPath();S.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Yj(p[1])):x.moveTo(X(p[0]),Yj(p[1])));x.stroke();
+x.strokeStyle=sun;x.beginPath();S.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Yp(p[2])):x.moveTo(X(p[0]),Yp(p[2])));x.stroke();
+const b=S.best;x.globalAlpha=.18;x.fillStyle=sun;x.fillRect(X(0),Yj(b.j),X(b.v)-X(0),Yj(0)-Yj(b.j));x.globalAlpha=1;
+x.fillStyle=sun;x.beginPath();x.arc(X(b.v),Yp(b.p),6,0,7);x.fill();x.fillStyle=N;x.beginPath();x.arc(X(b.v),Yj(b.j),6,0,7);x.fill();
+x.fillStyle=ink;x.textAlign="left";x.fillText("最大功率點",X(b.v)+10,Yp(b.p)-8);
+const ff=b.p/(S.voc*S.jph);
+$("#oSol").textContent=Math.round(S.G*100)+"%（"+S.G.toFixed(2)+" sun）";
+$("#sJsc").textContent=S.jph.toFixed(1)+" mA/cm²";$("#sVoc").textContent=S.voc.toFixed(2)+" V";$("#sP").textContent=b.p.toFixed(1)+" mW/cm²";$("#sFF").textContent=(ff*100).toFixed(0)+"%";$("#sEff").textContent=(b.p/S.G).toFixed(1)+"%";
+}
+
+/* ---------- Quiz ---------- */
+const QZ=[
+{q:"對 PN 接面加順向偏壓時，會發生什麼事？",o:["能障變低、空乏區變窄，電流迅速增加","能障變高、空乏區變寬","空乏區消失，P 與 N 變成同一種","只有電洞會移動，電子不動"],a:0,w:"順向偏壓抵消一部分內建電位，能障降低，載子容易越過接面。"},
+{q:"能隙 Eg = 2.76 eV 的材料，發光波長約是多少？",o:["約 449 nm（藍光）","約 650 nm（紅光）","約 873 nm（紅外線）","約 1240 nm"],a:0,w:"λ ≈ 1240 ÷ 2.76 ≈ 449 nm，落在藍光範圍。"},
+{q:"為什麼矽不適合做一般 LED？",o:["矽是間接能隙，複合多半變成熱","矽的能隙太大","矽不能導電","矽只能吸光不能放電"],a:0,w:"間接能隙需要晶格振動（聲子）幫忙，輻射複合機率很低。"},
+{q:"在太陽能電池 I–V 曲線上，哪個點的輸出功率最大？",o:["電流與電壓乘積最大的膝點","短路點（V = 0）","開路點（I = 0）","電流最大的地方"],a:0,w:"短路點電壓為 0，開路點電流為 0，兩處功率都是 0；最大功率在中間的膝點。"},
+{q:"日照強度減半，短路電流 Isc 與開路電壓 Voc 大致如何變化？",o:["Isc 約減半，Voc 只略降","Isc 與 Voc 都減半","Isc 不變，Voc 減半","兩者都不變"],a:0,w:"Isc 與光強成正比；Voc 隨光強呈對數變化，所以下降幅度很小。"}];
+let right=0,done=0;
+$("#qs").innerHTML="";QZ.forEach((q,qi)=>{const d=document.createElement("div");d.className="q";d.innerHTML=`<p>${qi+1}. ${q.q}</p>`;
+ const idx=q.o.map((_,i)=>i).sort(()=>Math.random()-.5),why=document.createElement("div");why.className="why";
+ idx.forEach(i=>{const b=document.createElement("button");b.textContent=q.o[i];b.onclick=()=>{if(d.dataset.d)return;d.dataset.d=1;done++;
+  if(i===q.a){b.classList.add("r");right++}else{b.classList.add("w");[...d.querySelectorAll("button")].find(e=>e.textContent===q.o[q.a]).classList.add("r")}
+  why.textContent=(i===q.a?"答對了。":"再想想。")+q.w;if(done===QZ.length)$("#score").textContent=" 你的分數：" +right+" / "+QZ.length};d.appendChild(b)});
+ d.appendChild(why);$("#qs").appendChild(d)});
+
+/* ---------- init ---------- */
+buildChips($("#ledChips"),MAT,()=>led,i=>led=i);
+buildChips($("#solChips"),SOL,()=>sol,i=>sol=i);
+vLED.oninput=()=>drawLED(0);gSol.oninput=drawSol;vPN.oninput=()=>drawPN(t0);
+function redraw(){drawPN(t0);updLED();drawSol()}
+addEventListener("resize",redraw);matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redraw);
+redraw();
+if(!REDUCED){let last=performance.now();(function loop(n){t0+=(n-last)/1000;last=n;drawPN(t0);requestAnimationFrame(loop)})(last)}
+</script>
+</body>
+</html>
